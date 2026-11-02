@@ -1,4 +1,4 @@
-import { Tag } from "@/components/tag";
+import { Tag } from "@/components/ui/tag";
 import { site } from "@/content/site";
 
 export function AboutSection() {

@@ -8,6 +8,7 @@ import { agentTools } from "@/lib/agent/tools";
 import { chatConfig } from "@/lib/config";
 import { recordChatTrace } from "@/lib/observability/langfuse";
 import { reportServerError } from "@/lib/observability/sentry";
+import { isSameOriginRequest } from "@/lib/security/origin";
 import { getClientIp, hashClientKey } from "@/lib/rate-limit/identity";
 import { getRateLimitStore } from "@/lib/rate-limit";
 
@@ -21,24 +22,20 @@ export async function GET() {
   const config = chatConfig();
   return Response.json({
     ok: true,
-    model: config.model,
     aiConfigured: config.apiKeyConfigured,
-    knowledgeProvider: config.knowledgeProvider,
   });
 }
 
 export async function POST(request: Request) {
-  const config = chatConfig();
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return jsonError(400, "invalid", site.chat.errors.invalid);
+  if (!isSameOriginRequest(request)) {
+    return jsonError(403, "forbidden", site.chat.errors.generic);
   }
 
-  const prepared = prepareChatMessages(body, config.maxUserChars, config.maxHistory);
+  const config = chatConfig();
+  const raw = await request.text();
+  const prepared = prepareChatMessages(raw, config.maxUserChars, config.maxHistory);
   if (!prepared.ok) {
-    return jsonError(400, "invalid", prepared.message);
+    return jsonError(prepared.status, "invalid", prepared.message);
   }
 
   if (!config.apiKeyConfigured) {
@@ -77,10 +74,10 @@ export async function POST(request: Request) {
       system: buildSystemPrompt(chunks),
       messages: modelMessages,
       tools: agentTools,
-      stopWhen: isStepCount(5),
+      stopWhen: isStepCount(4),
       maxOutputTokens: config.maxOutputTokens,
       onError: ({ error }) => {
-        void reportServerError(error, { area: "chat-stream", model: config.model });
+        void reportServerError(error, { area: "chat-stream" });
       },
       onEnd: async (event) => {
         try {
@@ -103,10 +100,11 @@ export async function POST(request: Request) {
     return result.toUIMessageStreamResponse({
       headers: {
         "X-RateLimit-Remaining": String(rate.remaining),
+        "Cache-Control": "no-store",
       },
     });
   } catch (error) {
-    await reportServerError(error, { area: "chat", model: config.model });
+    await reportServerError(error, { area: "chat" });
     return jsonError(500, "chat_failed", site.chat.errors.generic);
   }
 }

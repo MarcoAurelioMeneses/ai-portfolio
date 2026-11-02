@@ -1,5 +1,7 @@
+import "server-only";
 import { Langfuse } from "langfuse";
 import { estimateChatCost } from "@/lib/observability/pricing";
+import { scrubText } from "@/lib/security/scrub";
 
 type ChatTrace = {
   model: string;
@@ -37,10 +39,12 @@ export async function recordChatTrace(trace: ChatTrace): Promise<void> {
 
   const started = new Date(Date.now() - trace.latencyMs);
   const cost = estimateChatCost(trace.model, trace.inputTokens, trace.outputTokens);
+  const input = scrubText(typeof trace.input === "string" ? trace.input : "");
+  const output = scrubText(trace.output);
   const root = langfuse.trace({
     name: "portfolio-chat",
-    input: trace.input,
-    output: trace.output,
+    input,
+    output,
     tags: ["portfolio", "chat"],
     metadata: {
       knowledgeProvider: trace.knowledgeProvider,
@@ -52,8 +56,8 @@ export async function recordChatTrace(trace: ChatTrace): Promise<void> {
   root.generation({
     name: "openai-response",
     model: trace.model,
-    input: trace.input,
-    output: trace.output,
+    input,
+    output,
     startTime: started,
     endTime: new Date(),
     usageDetails: {

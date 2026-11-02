@@ -1,3 +1,4 @@
+import "server-only";
 import { getMemoryRateLimitStore } from "@/lib/rate-limit/memory";
 import { createSupabaseRateLimitStore } from "@/lib/rate-limit/supabase";
 import type { RateLimitStore } from "@/lib/rate-limit/types";

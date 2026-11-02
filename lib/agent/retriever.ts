@@ -1,3 +1,4 @@
+import "server-only";
 import { embed } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { createClient } from "@supabase/supabase-js";
@@ -67,8 +68,8 @@ export function createPgVectorRetriever(): KnowledgeRetriever {
           source: row.source,
           content: row.content,
         }));
-      } catch (error) {
-        console.warn("pgvector retrieval failed; using static knowledge.", error);
+      } catch {
+        console.warn("pgvector retrieval failed; using static knowledge.");
         return fallback.retrieve(query);
       }
     },

@@ -36,6 +36,22 @@ Clients and employers are stored only as anonymized labels. Do not put real orga
 
 Update the GitHub URL in `content/site.ts` before launch. A public profile matching this name was not verified, so the current href is a placeholder.
 
+## Folder conventions
+
+Import the module you need with the `@/` alias. There are no barrel files: a barrel would hide the dependency graph and make circular imports easier.
+
+| Path | Holds |
+| --- | --- |
+| `components/layout` | Header, footer, logo, providers |
+| `components/sections` | Home sections and the shared case facts |
+| `components/chat` | Panel, context, and the contact card the agent can show |
+| `components/ui` | Tag, icons, theme toggle |
+| `content` | Typed copy. The only source for the page and the agent |
+| `lib/agent` | Prompt, tools, retrieval, message validation |
+| `lib/security` | Origin check and log/trace scrubbing |
+| `lib/rate-limit` | Pluggable daily limiter |
+| `app/api/chat` | The only route that calls OpenAI |
+
 ## Architecture
 
 ```
@@ -47,7 +63,6 @@ lib/agent/tools.ts              scroll_to, show_contact
 app/api/chat/route.ts           streaming POST
 lib/rate-limit/                 memory | upstash | supabase
 app/cases/[slug]/page.tsx       one page per case
-components/                     page sections and the chat panel
 ```
 
 ### Chat
@@ -72,7 +87,7 @@ The hero field "Pergunte ao meu agente" sends the question into the panel. The f
 
 ### Rate limit
 
-About 20 messages per hashed IP per 24 hours (`CHAT_RATE_LIMIT_PER_DAY`). The raw IP is not stored. `RATE_LIMIT_PROVIDER`:
+About 20 messages per hashed IP per 24 hours (`CHAT_RATE_LIMIT_PER_DAY`, hard-capped at 100). The raw IP is not stored. Forwarded IP headers are trusted only when the platform overwrites them, or when `TRUST_PROXY_HEADERS=true`. `RATE_LIMIT_PROVIDER`:
 
 | Value | Behavior |
 | --- | --- |
@@ -86,7 +101,9 @@ If the selected provider is missing credentials, the route logs a warning and us
 
 All three are skipped when their env vars are empty.
 
-- **Langfuse** (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, optional `LANGFUSE_BASE_URL`): one trace and one generation per reply, with input/output tokens, latency, and an estimated USD cost for `gpt-4o-mini`.
+- **Langfuse** (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, optional `LANGFUSE_BASE_URL`): one trace and one generation per reply, with token counts, latency, and an estimated USD cost for `gpt-4o-mini`. Emails, IP addresses, and credential-shaped strings are redacted before the trace is sent.
+
+The public chat endpoint is the main cost and abuse surface. See [SECURITY.md](SECURITY.md) for the threat model, the same-origin check, and the recommendation to set a monthly spend limit in the OpenAI dashboard.
 - **PostHog** (`NEXT_PUBLIC_POSTHOG_KEY`, optional `NEXT_PUBLIC_POSTHOG_HOST`): `cta_clicked`, `chat_opened`, `message_sent`. Message text is not sent, only the length.
 - **Sentry** (`SENTRY_DSN` and/or `NEXT_PUBLIC_SENTRY_DSN`): server and client exceptions. The Next config is not wrapped with the Sentry webpack plugin, so builds do not need `SENTRY_AUTH_TOKEN`.
 

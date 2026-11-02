@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "@/components/logo";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Logo } from "@/components/layout/logo";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { site } from "@/content/site";
 import { track } from "@/lib/analytics";
 

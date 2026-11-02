@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { SendIcon } from "@/components/icons";
+import { SendIcon } from "@/components/ui/icons";
 import { site } from "@/content/site";
 import { track } from "@/lib/analytics";
 import { useChatPanel } from "@/components/chat/chat-context";

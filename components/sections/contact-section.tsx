@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowUpRightIcon } from "@/components/icons";
-import { SiteFooter } from "@/components/site-footer";
+import { ArrowUpRightIcon } from "@/components/ui/icons";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { site } from "@/content/site";
 import { track } from "@/lib/analytics";
 

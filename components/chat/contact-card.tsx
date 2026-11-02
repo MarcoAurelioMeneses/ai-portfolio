@@ -1,4 +1,4 @@
-import { ArrowUpRightIcon } from "@/components/icons";
+import { ArrowUpRightIcon } from "@/components/ui/icons";
 
 export type ContactCardData = {
   email: string;

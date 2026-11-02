@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CaseFacts } from "@/components/case-facts";
-import { SiteFooter } from "@/components/site-footer";
-import { Tag } from "@/components/tag";
+import { CaseFacts } from "@/components/sections/case-facts";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { Tag } from "@/components/ui/tag";
 import { site } from "@/content/site";
 
 type CasePageProps = {

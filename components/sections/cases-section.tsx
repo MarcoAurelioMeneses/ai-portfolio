@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { CaseFacts } from "@/components/case-facts";
-import { Tag } from "@/components/tag";
+import { CaseFacts } from "@/components/sections/case-facts";
+import { Tag } from "@/components/ui/tag";
 import { site } from "@/content/site";
 
 export function CasesSection() {
