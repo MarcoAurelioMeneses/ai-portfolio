@@ -1,0 +1,4 @@
+# Next.js 16 requires Node >= 20.9. This wins over package.json engines
+# so Nixpacks installs Node 22 instead of its Node 18 default.
+[variables]
+NIXPACKS_NODE_VERSION = "22"
