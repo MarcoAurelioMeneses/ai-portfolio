@@ -161,13 +161,41 @@ Import the repository. Framework preset is Next.js. Add the variables from `.env
 
 ### Railway
 
-This is the intended host. `railway.json` tells Nixpacks to run `npm run build` and `npm run start` (`next start`, which listens on `PORT`).
+This is the intended host. Next.js 16 needs Node.js `>=20.9`. The repo pins Node 22 LTS so Nixpacks and Railpack do not build on Node 18:
 
-1. Create a service from this repo. Railway reads `railway.json`.
-2. Set the variables from `.env.example`. Set `TRUST_PROXY_HEADERS=true` so the per-IP limits use Railway's `x-forwarded-for`. Set `NEXT_PUBLIC_SITE_URL` to the public origin, for example `https://your-app.up.railway.app`.
-3. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, and apply `supabase/migrations` in the Supabase SQL editor. Without them the page still loads and the contact form explains that it is not configured.
-4. Use `RATE_LIMIT_PROVIDER=upstash` or `supabase` before running more than one replica. One replica can stay on `memory`.
-5. Health check is `GET /`.
+- `package.json` `engines.node` is `>=20.9 <23`. Nixpacks treats that range as Node 22, the newest LTS it contains.
+- `.nvmrc` and `.node-version` are `22`. Local version managers and Railpack read them. Railpack's Node installer does not accept the `engines` range, so these files are what select 22 there.
+- `nixpacks.toml` sets `NIXPACKS_NODE_VERSION=22`. That variable wins over `engines` and stops the Node 18.20.5 default.
+- `railpack.json` asks for the `node` package at major 22.
+- `railway.json` uses Nixpacks, runs `npm run build`, then `npm run start -- -H 0.0.0.0 -p $PORT`. That is `next start` bound to `0.0.0.0` and Railway's `PORT`.
+
+Health check is `GET /`.
+
+Create a service from this repo. Railway reads `railway.json`. The image builds with no secrets. Set the variables below on the service; names match `.env.example`.
+
+Required on Railway:
+
+| Variable | Value |
+| --- | --- |
+| `TRUST_PROXY_HEADERS` | `true`, so the per-IP limits use Railway's `x-forwarded-for` |
+| `NEXT_PUBLIC_SITE_URL` | The public origin, for example `https://your-app.up.railway.app`. The chat and contact routes use it for the same-origin check. |
+
+Required for the features that call out:
+
+| Variable | When |
+| --- | --- |
+| `OPENAI_API_KEY` | Chat replies. Without it the page still loads and the panel says the agent is not configured. |
+| `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` | The contact form. Apply `supabase/migrations` in the Supabase SQL editor. Without them the form explains that it is not configured and the email link remains. |
+| `RATE_LIMIT_PROVIDER` | `upstash` or `supabase` before a second replica. One replica can stay on the default `memory`. |
+| `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` | Only when `RATE_LIMIT_PROVIDER=upstash`. |
+
+Optional. Leave them empty to disable the integration. Defaults are in `.env.example`.
+
+- `OPENAI_MODEL` (default `gpt-4o-mini`), `CHAT_RATE_LIMIT_PER_DAY`, `CONTACT_RATE_LIMIT_PER_DAY`, `CHAT_MAX_OUTPUT_TOKENS`, `CHAT_MAX_USER_CHARS`, `CHAT_MAX_HISTORY`, `RATE_LIMIT_SALT`
+- `KNOWLEDGE_PROVIDER` (default `static`)
+- Langfuse: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`
+- PostHog: `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`
+- Sentry: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`. No `SENTRY_AUTH_TOKEN` is required to build.
 
 A separate worker, not this web service, should forward new contact rows.
 
