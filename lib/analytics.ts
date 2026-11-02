@@ -18,7 +18,7 @@ export function initAnalytics(): void {
 }
 
 export function track(
-  event: "cta_clicked" | "chat_opened" | "message_sent",
+  event: "cta_clicked" | "chat_opened" | "message_sent" | "contact_submitted",
   properties?: Record<string, string | number | boolean>,
 ): void {
   if (!started) return;

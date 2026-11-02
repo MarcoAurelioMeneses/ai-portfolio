@@ -104,7 +104,13 @@ All three are skipped when their env vars are empty.
 - **Langfuse** (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, optional `LANGFUSE_BASE_URL`): one trace and one generation per reply, with token counts, latency, and an estimated USD cost for `gpt-4o-mini`. Emails, IP addresses, and credential-shaped strings are redacted before the trace is sent.
 
 The public chat endpoint is the main cost and abuse surface. See [SECURITY.md](SECURITY.md) for the threat model, the same-origin check, and the recommendation to set a monthly spend limit in the OpenAI dashboard.
-- **PostHog** (`NEXT_PUBLIC_POSTHOG_KEY`, optional `NEXT_PUBLIC_POSTHOG_HOST`): `cta_clicked`, `chat_opened`, `message_sent`. Message text is not sent, only the length.
+- **PostHog** (`NEXT_PUBLIC_POSTHOG_KEY`, optional `NEXT_PUBLIC_POSTHOG_HOST`): `cta_clicked`, `chat_opened`, `message_sent`, `contact_submitted`. Message text and contact details are not sent. `contact_submitted` only records whether a subject was filled in.
+
+### Contact form
+
+The Contato section posts to `POST /api/contact`. Zod checks name, email, optional subject, and message length. A honeypot field (`website`) returns success without writing a row. The same rate-limit store as chat applies, with a separate key and a default of 5 submissions per hashed IP per day (`CONTACT_RATE_LIMIT_PER_DAY`). The route uses the same origin check and does not store an IP address.
+
+Rows go to `contact_messages` (`supabase/migrations/0002_contact_messages.sql`) with `status = 'new'`. RLS is enabled and there are no policies for the public roles; the API inserts with `SUPABASE_SERVICE_ROLE_KEY`. If those env vars are unset, the form shows a friendly error and the email link remains. A separate process should read `status = 'new'`, email Marco, then set `status = 'forwarded'` and `forwarded_at`.
 - **Sentry** (`SENTRY_DSN` and/or `NEXT_PUBLIC_SENTRY_DSN`): server and client exceptions. The Next config is not wrapped with the Sentry webpack plugin, so builds do not need `SENTRY_AUTH_TOKEN`.
 
 ## Deploy
@@ -115,7 +121,15 @@ Import the repository. Framework preset is Next.js. Add the variables from `.env
 
 ### Railway
 
-Create a service from this repo. Nixpacks detects Node and runs `npm run build`. Start command: `npm start` (`next start`). Set the same environment variables in the service. The in-memory limiter is acceptable on a single replica; switch providers before you scale out.
+This is the intended host. `railway.json` tells Nixpacks to run `npm run build` and `npm run start` (`next start`, which listens on `PORT`).
+
+1. Create a service from this repo. Railway reads `railway.json`.
+2. Set the variables from `.env.example`. Set `TRUST_PROXY_HEADERS=true` so the per-IP limits use Railway's `x-forwarded-for`. Set `NEXT_PUBLIC_SITE_URL` to the public origin, for example `https://your-app.up.railway.app`.
+3. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, and apply `supabase/migrations` in the Supabase SQL editor. Without them the page still loads and the contact form explains that it is not configured.
+4. Use `RATE_LIMIT_PROVIDER=upstash` or `supabase` before running more than one replica. One replica can stay on `memory`.
+5. Health check is `GET /`.
+
+A separate worker, not this web service, should forward new contact rows.
 
 ## Accessibility
 

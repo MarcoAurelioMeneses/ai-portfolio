@@ -22,5 +22,6 @@ export function chatConfig() {
     maxUserChars: boundedInt(process.env.CHAT_MAX_USER_CHARS, 2000, 4000),
     maxHistory: boundedInt(process.env.CHAT_MAX_HISTORY, 16, 24),
     knowledgeProvider,
+    contactDailyLimit: boundedInt(process.env.CONTACT_RATE_LIMIT_PER_DAY, 5, 20),
   };
 }

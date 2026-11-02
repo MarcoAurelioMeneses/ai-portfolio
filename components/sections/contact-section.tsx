@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowUpRightIcon } from "@/components/ui/icons";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { ContactForm } from "@/components/sections/contact-form";
+import { ArrowUpRightIcon } from "@/components/ui/icons";
 import { site } from "@/content/site";
 import { track } from "@/lib/analytics";
 
@@ -38,7 +39,8 @@ export function ContactSection() {
             </li>
           ))}
         </ul>
-        <div className="mt-auto">
+        <ContactForm />
+        <div className="mt-auto pt-16">
           <SiteFooter />
         </div>
       </div>
