@@ -4,6 +4,46 @@ Personal site for Marco Aurélio. The interface is a minimal black-and-white lay
 
 Visible copy is Brazilian Portuguese. Code, comments, and this document are English.
 
+## Screenshots
+
+Captured from a local run. The hero is shown side by side in both themes. The other views use the light theme.
+
+| Light | Dark |
+| --- | --- |
+| <img alt="Hero in the light theme" src="docs/screenshots/hero-light.webp" width="720"> | <img alt="Hero in the dark theme" src="docs/screenshots/hero-dark.webp" width="720"> |
+
+Hero: the name, the tagline, and the agent question field.
+
+### Cases
+
+<img alt="Cases section with four project cards" src="docs/screenshots/cases.webp" width="720">
+
+The cases grid on the home page.
+
+### Case detail
+
+<img alt="Case detail page for the legal AI platform" src="docs/screenshots/case-detail.webp" width="720">
+
+A case page, at `/cases/ia-para-o-juridico`.
+
+### Chat
+
+<img alt="Chat panel open on the empty state with suggested questions" src="docs/screenshots/chat.webp" width="720">
+
+The chat panel open on its empty state, with suggested questions.
+
+### Contact
+
+<img alt="Contact section with the email, links, and the message form" src="docs/screenshots/contact.webp" width="720">
+
+The contact section, with the form.
+
+### Mobile
+
+<img alt="Hero on a phone-width screen" src="docs/screenshots/hero-mobile.webp" width="360">
+
+The hero at a phone width.
+
 ## Stack
 
 - Next.js (App Router) and TypeScript
