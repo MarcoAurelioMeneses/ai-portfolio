@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -14,15 +15,20 @@ type ChatSource = "fab" | "hero";
 
 type ChatPanelContextValue = {
   open: boolean;
+  questionVersion: number;
   openChat: (source: ChatSource) => void;
   closeChat: () => void;
+  ask: (text: string) => void;
+  takeQuestion: () => string | null;
 };
 
 const ChatPanelContext = createContext<ChatPanelContextValue | null>(null);
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [questionVersion, setQuestionVersion] = useState(0);
   const returnFocus = useRef<HTMLElement | null>(null);
+  const questionRef = useRef<string | null>(null);
   const wasOpen = useRef(false);
 
   useEffect(() => {
@@ -36,19 +42,36 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     returnFocus.current = null;
   }, [open]);
 
+  const takeQuestion = useCallback(() => {
+    const valueText = questionRef.current;
+    questionRef.current = null;
+    return valueText;
+  }, []);
+
+  function openChat(source: ChatSource) {
+    if (!open) {
+      returnFocus.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      track("chat_opened", { source });
+    }
+    setOpen(true);
+  }
+
   const value: ChatPanelContextValue = {
     open,
-    openChat(source) {
-      if (!open) {
-        returnFocus.current =
-          document.activeElement instanceof HTMLElement ? document.activeElement : null;
-        track("chat_opened", { source });
-      }
-      setOpen(true);
-    },
+    questionVersion,
+    openChat,
     closeChat() {
       setOpen(false);
     },
+    ask(text: string) {
+      const valueText = text.trim();
+      if (!valueText) return;
+      questionRef.current = valueText;
+      setQuestionVersion((version) => version + 1);
+      openChat("hero");
+    },
+    takeQuestion,
   };
 
   return <ChatPanelContext.Provider value={value}>{children}</ChatPanelContext.Provider>;

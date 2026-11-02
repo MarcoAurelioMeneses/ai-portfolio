@@ -47,7 +47,7 @@ function isToolPart(
 }
 
 export function ChatWidget() {
-  const { open, openChat, closeChat } = useChatPanel();
+  const { open, openChat, closeChat, questionVersion, takeQuestion } = useChatPanel();
   const [draft, setDraft] = useState("");
   const router = useRouter();
   const pathname = usePathname();
@@ -65,6 +65,14 @@ export function ChatWidget() {
   const { messages, sendMessage, status, error, clearError } = useChat({ transport });
 
   const busy = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    const text = takeQuestion();
+    if (!text) return;
+    clearError();
+    track("message_sent", { length: text.length });
+    void sendMessage({ text });
+  }, [questionVersion, takeQuestion, clearError, sendMessage]);
 
   useEffect(() => {
     if (!open) return;
@@ -271,7 +279,7 @@ export function ChatWidget() {
             />
             <button
               type="submit"
-              className="inline-flex size-9 items-center justify-center rounded-lg bg-foreground text-background disabled:opacity-40"
+              className="inline-flex size-9 items-center justify-center rounded-md bg-accent text-white disabled:opacity-40"
               aria-label={site.chat.sendLabel}
               disabled={busy || draft.trim().length === 0}
             >

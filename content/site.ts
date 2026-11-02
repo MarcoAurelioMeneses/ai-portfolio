@@ -46,6 +46,7 @@ export const site = {
   ],
   hero: {
     agentCta: { label: "Pergunte ao meu agente" },
+    placeholder: "Pergunte sobre meus projetos, stack ou experiência…",
     primaryCta: { id: "ver_cases", href: "/#cases", label: "Ver cases" },
     secondaryCta: { id: "contato", href: "/#contato", label: "Contato" },
   },

@@ -59,7 +59,7 @@ The assistant replies in the visitor's language and may call two tools:
 - `scroll_to` — scrolls to `sobre`, `cases`, `experiencia`, `stack`, or `contato` on the home page. A case id opens `/cases/[slug]`.
 - `show_contact` — renders the contact card inside the chat
 
-The hero button "Pergunte ao meu agente" and the floating button both open the panel. UI actions run in the browser from the tool results on the message stream. The assistant is instructed to keep the anonymized labels and not to invent metrics. No vector database is required.
+The hero field "Pergunte ao meu agente" sends the question into the panel. The floating button opens it as well. UI actions run in the browser from the tool results on the message stream. The assistant is instructed to keep the anonymized labels and not to invent metrics. No vector database is required.
 
 ### Retrieval, ready for pgvector
 
