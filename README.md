@@ -48,7 +48,7 @@ The hero at a phone width.
 
 - Next.js (App Router) and TypeScript
 - Tailwind CSS v4 and `next-themes` for light and dark
-- Vercel AI SDK streaming to OpenAI (`gpt-4o-mini` by default)
+- Vercel AI SDK streaming to OpenAI (`gpt-6-luna` by default)
 - Optional Langfuse, PostHog, and Sentry. The site builds and runs when none of them are set.
 
 ## Getting started
@@ -107,7 +107,7 @@ app/cases/[slug]/page.tsx       one page per case
 
 ### Chat
 
-`POST /api/chat` streams with the AI SDK (`streamText` → `toUIMessageStreamResponse`). The model is `OPENAI_MODEL` or `gpt-4o-mini`. Output length is capped by `CHAT_MAX_OUTPUT_TOKENS`.
+`POST /api/chat` streams with the AI SDK (`streamText` → `toUIMessageStreamResponse`). The model is `OPENAI_MODEL` or `gpt-6-luna`. Output length is capped by `CHAT_MAX_OUTPUT_TOKENS`. For GPT-5 and GPT-6 ids the route sets `reasoningEffort` to `none`, so the cap applies to the reply and tool calls stay available.
 
 The assistant replies in the visitor's language and may call two tools:
 
@@ -141,7 +141,7 @@ If the selected provider is missing credentials, the route logs a warning and us
 
 All three are skipped when their env vars are empty.
 
-- **Langfuse** (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, optional `LANGFUSE_BASE_URL`): one trace and one generation per reply, with token counts, latency, and an estimated USD cost for `gpt-4o-mini`. Emails, IP addresses, and credential-shaped strings are redacted before the trace is sent.
+- **Langfuse** (`LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, optional `LANGFUSE_BASE_URL`): one trace and one generation per reply, with token counts, latency, and an estimated USD cost. The estimate uses OpenAI standard short-context rates from [the pricing page](https://developers.openai.com/api/docs/pricing): `gpt-6-luna` is $0.10 per 1M input tokens and $0.50 per 1M output tokens. Emails, IP addresses, and credential-shaped strings are redacted before the trace is sent.
 
 The public chat endpoint is the main cost and abuse surface. See [SECURITY.md](SECURITY.md) for the threat model, the same-origin check, and the recommendation to set a monthly spend limit in the OpenAI dashboard.
 - **PostHog** (`NEXT_PUBLIC_POSTHOG_KEY`, optional `NEXT_PUBLIC_POSTHOG_HOST`): `cta_clicked`, `chat_opened`, `message_sent`, `contact_submitted`. Message text and contact details are not sent. `contact_submitted` only records whether a subject was filled in.
@@ -191,7 +191,7 @@ Required for the features that call out:
 
 Optional. Leave them empty to disable the integration. Defaults are in `.env.example`.
 
-- `OPENAI_MODEL` (default `gpt-4o-mini`), `CHAT_RATE_LIMIT_PER_DAY`, `CONTACT_RATE_LIMIT_PER_DAY`, `CHAT_MAX_OUTPUT_TOKENS`, `CHAT_MAX_USER_CHARS`, `CHAT_MAX_HISTORY`, `RATE_LIMIT_SALT`
+- `OPENAI_MODEL` (default `gpt-6-luna`), `CHAT_RATE_LIMIT_PER_DAY`, `CONTACT_RATE_LIMIT_PER_DAY`, `CHAT_MAX_OUTPUT_TOKENS`, `CHAT_MAX_USER_CHARS`, `CHAT_MAX_HISTORY`, `RATE_LIMIT_SALT`
 - `KNOWLEDGE_PROVIDER` (default `static`)
 - Langfuse: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`
 - PostHog: `NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`

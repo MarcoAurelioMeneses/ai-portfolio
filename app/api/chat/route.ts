@@ -76,6 +76,13 @@ export async function POST(request: Request) {
       tools: agentTools,
       stopWhen: isStepCount(4),
       maxOutputTokens: config.maxOutputTokens,
+      // gpt-6-luna defaults reasoning.effort to medium. Chat Completions can
+      // call tools only at "none", and medium reasoning would spend the output
+      // cap before the visible reply. Pin none so tools and the cap match the
+      // previous direct-answer behavior. https://developers.openai.com/api/docs/models/gpt-6-luna
+      providerOptions: /gpt-(?:5|6)/.test(config.model)
+        ? { openai: { reasoningEffort: "none" } }
+        : undefined,
       onError: ({ error }) => {
         void reportServerError(error, { area: "chat-stream" });
       },

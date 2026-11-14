@@ -14,7 +14,7 @@ export function chatConfig() {
     provider === "pgvector" ? "pgvector" : "static";
 
   return {
-    model: process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini",
+    model: process.env.OPENAI_MODEL?.trim() || "gpt-6-luna",
     apiKeyConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),
     dailyLimit: boundedInt(process.env.CHAT_RATE_LIMIT_PER_DAY, 20, 100),
     windowMs: 24 * 60 * 60 * 1000,
