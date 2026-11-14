@@ -1,4 +1,5 @@
 import "server-only";
+import { DEFAULT_CHAT_MODEL } from "@/lib/agent/chat-model";
 
 export type KnowledgeProviderName = "static" | "pgvector";
 
@@ -14,7 +15,7 @@ export function chatConfig() {
     provider === "pgvector" ? "pgvector" : "static";
 
   return {
-    model: process.env.OPENAI_MODEL?.trim() || "gpt-6-luna",
+    model: process.env.OPENAI_MODEL?.trim() || DEFAULT_CHAT_MODEL,
     apiKeyConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),
     dailyLimit: boundedInt(process.env.CHAT_RATE_LIMIT_PER_DAY, 20, 100),
     windowMs: 24 * 60 * 60 * 1000,

@@ -62,6 +62,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000). Without `OPENAI_API_KEY` the page still renders. Opening the chat and sending a message shows a configuration notice instead of calling a model.
 
 ```bash
+npm test
 npm run lint
 npm run typecheck
 npm run build
@@ -107,7 +108,7 @@ app/cases/[slug]/page.tsx       one page per case
 
 ### Chat
 
-`POST /api/chat` streams with the AI SDK (`streamText` → `toUIMessageStreamResponse`). The model is `OPENAI_MODEL` or `gpt-6-luna`. Output length is capped by `CHAT_MAX_OUTPUT_TOKENS`. For GPT-5 and GPT-6 ids the route sets `reasoningEffort` to `none`, so the cap applies to the reply and tool calls stay available.
+`POST /api/chat` streams with the AI SDK (`streamText` → `toUIMessageStreamResponse`). The model is `OPENAI_MODEL` or `gpt-6-luna`. `openai(model)` calls the Responses API. Output length is capped by `CHAT_MAX_OUTPUT_TOKENS`. GPT-5 and GPT-6 ids send `reasoning.effort: none` (Chat Completions would receive the same value as `reasoning_effort`, which that endpoint requires for function calling). Temperature and other sampling params are omitted. The output cap therefore applies to the reply, and hidden reasoning tokens are not billed.
 
 The assistant replies in the visitor's language and may call two tools:
 

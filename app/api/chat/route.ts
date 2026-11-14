@@ -1,6 +1,7 @@
 import { convertToModelMessages, isStepCount, streamText, type UIMessage } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { site } from "@/content/site";
+import { chatModelCall } from "@/lib/agent/chat-model";
 import { prepareChatMessages } from "@/lib/agent/messages";
 import { buildSystemPrompt } from "@/lib/agent/prompt";
 import { createRetriever } from "@/lib/agent/retriever";
@@ -70,19 +71,14 @@ export async function POST(request: Request) {
     );
 
     const result = streamText({
+      // openai(model) is the Responses client. chatModelCall still pins
+      // reasoning effort to none, which Chat Completions would require for tools.
       model: openai(config.model),
       system: buildSystemPrompt(chunks),
       messages: modelMessages,
       tools: agentTools,
       stopWhen: isStepCount(4),
-      maxOutputTokens: config.maxOutputTokens,
-      // gpt-6-luna defaults reasoning.effort to medium. Chat Completions can
-      // call tools only at "none", and medium reasoning would spend the output
-      // cap before the visible reply. Pin none so tools and the cap match the
-      // previous direct-answer behavior. https://developers.openai.com/api/docs/models/gpt-6-luna
-      providerOptions: /gpt-(?:5|6)/.test(config.model)
-        ? { openai: { reasoningEffort: "none" } }
-        : undefined,
+      ...chatModelCall(config.model, config.maxOutputTokens),
       onError: ({ error }) => {
         void reportServerError(error, { area: "chat-stream" });
       },
